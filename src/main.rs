@@ -1,5 +1,5 @@
 pub mod token;
-pub mod lexical_error;
+pub mod lex_error;
 pub mod lexer;
 
 use token::{Spanned, Token};
