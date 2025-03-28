@@ -1,5 +1,4 @@
 use std::{iter::Peekable, str::Chars};
-
 use crate::{lex_error::LexError, token::{Spanned, Token}};
 
 pub fn tokenize(source: String) -> Result<Vec<Spanned<Token>>, LexError> {
