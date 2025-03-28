@@ -2,14 +2,11 @@ pub mod token;
 pub mod lex_error;
 pub mod lexer;
 
-use token::{Spanned, Token};
+use token::Token;
 
 fn main() {
-	let tokens: [Spanned<Token>; 3] = [
-		(0, Token::Number { literal: 123. }, 1),
-		(1, Token::String { literal: "hello".to_string() }, 2),
-		(2, Token::Boolean { literal: true }, 3),
-	];
+	let src = "123\n   \"hello\"".to_string();
+	let tokens = lexer::tokenize(src).unwrap();
 
 	tokens.iter().for_each(|token| {
 		match token {

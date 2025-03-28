@@ -41,12 +41,18 @@ impl<'a> Lexer<'a> {
 		let token = match self.chars.peek().unwrap() {
 			'0'..='9' => self.next_number()?,
 			'"' => self.next_string()?,
+
 			'\n' => {
 				self.chars.next();
 				self.line += 1;
 				return self.next_token();
 			}
-			c if is_whitespace(*c) => return self.next_token(),
+
+			c if is_whitespace(*c) => {
+				self.chars.next();
+				return self.next_token();
+			},
+			
 			c => return Err(LexError::UnexpectedChar { ch: *c, line: 1 }),
 		};
 
