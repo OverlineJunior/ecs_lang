@@ -68,7 +68,7 @@ impl<'a> Lexer<'a> {
         }
 
         let token = match self.chars.peek().unwrap() {
-            '0'..='9' => self.next_number()?,
+            c if c.is_ascii_digit() => self.next_number()?,
             '"' => self.next_string()?,
 
             c if is_name_start(*c) => self.next_name(),
@@ -91,27 +91,26 @@ impl<'a> Lexer<'a> {
     }
 
     fn next_number(&mut self) -> Result<Spanned<Token>, LexError> {
-        let mut lexeme = String::new();
+        assert!(
+            self.chars.peek().unwrap().is_ascii_digit(),
+            "`next_number` should be called only when the current char is a digit"
+        );
 
-        while let Some(&ch) = self.chars.peek() {
-            match ch {
-                '0'..='9' => lexeme.push(ch),
-                _ => break,
-            }
+        let lexeme = eat_while(&mut self.chars, |c| c.is_ascii_digit());
+        let literal = lexeme
+            .parse::<f64>()
+            .unwrap_or_else(|_| panic!("Failed to parse number: {lexeme}"));
 
-            self.chars.next();
-        }
-
-        Ok((
-            self.line,
-            Token::Number {
-                literal: lexeme.parse().expect("Failed to parse number"),
-            },
-            self.line,
-        ))
+        Ok((self.line, Token::Number { literal }, self.line))
     }
 
     fn next_string(&mut self) -> Result<Spanned<Token>, LexError> {
+        assert_eq!(
+            self.chars.peek().unwrap(),
+            &'"',
+            "`next_string` should be called only when the current char is a double quote"
+        );
+
         let mut lexeme = String::new();
         self.chars.next();
 
@@ -135,6 +134,11 @@ impl<'a> Lexer<'a> {
 
     /// First attempts to read a keyword, otherwise reads an identifier.
     fn next_name(&mut self) -> Spanned<Token> {
+        assert!(
+            is_name_start(*self.chars.peek().unwrap()),
+            "`next_name` should be called only when the current char is a name start"
+        );
+
         let lexeme = eat_while(&mut self.chars, |c| is_name_start(c) || is_name_continue(c));
 
         let token = Token::keyword_from(&lexeme).unwrap_or(Token::Identifier {
