@@ -19,11 +19,29 @@ pub fn tokenize(source: String) -> Result<Vec<Spanned<Token>>, LexError> {
     Ok(tokens)
 }
 
-fn is_identifier_start(c: char) -> bool {
+fn eat_while<F>(chars: &mut Peekable<Chars>, predicate: F) -> String
+where
+    F: Fn(char) -> bool,
+{
+    let mut lexeme = String::new();
+
+    while let Some(&ch) = chars.peek() {
+        if predicate(ch) {
+            lexeme.push(ch);
+            chars.next();
+        } else {
+            break;
+        }
+    }
+
+    lexeme
+}
+
+fn is_name_start(c: char) -> bool {
     c.is_alphabetic() || c == '_'
 }
 
-fn is_identifier_continue(c: char) -> bool {
+fn is_name_continue(c: char) -> bool {
     c.is_alphanumeric() || c == '_'
 }
 
@@ -53,7 +71,7 @@ impl<'a> Lexer<'a> {
             '0'..='9' => self.next_number()?,
             '"' => self.next_string()?,
 
-            c if is_identifier_start(*c) => self.next_identifier(),
+            c if is_name_start(*c) => self.next_name(),
 
             '\n' => {
                 self.chars.next();
@@ -115,7 +133,14 @@ impl<'a> Lexer<'a> {
         Ok((self.line, Token::String { literal: lexeme }, self.line))
     }
 
-    fn next_identifier(&mut self) -> Spanned<Token> {
-        todo!()
+    /// First attempts to read a keyword, otherwise reads an identifier.
+    fn next_name(&mut self) -> Spanned<Token> {
+        let lexeme = eat_while(&mut self.chars, |c| is_name_start(c) || is_name_continue(c));
+
+        let token = Token::keyword_from(&lexeme).unwrap_or(Token::Identifier {
+            name: lexeme.clone(),
+        });
+
+        (self.line, token, self.line)
     }
 }

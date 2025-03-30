@@ -3,7 +3,7 @@ pub mod lexer;
 pub mod token;
 
 fn main() {
-    let src = "123\n   \"hello\"".to_string();
+    let src = "123\n   \"hello\"   print".to_string();
     let tokens = lexer::tokenize(src).unwrap();
 
     tokens

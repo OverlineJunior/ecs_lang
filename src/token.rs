@@ -15,7 +15,7 @@ pub enum Token {
     Number { literal: f64 },
     String { literal: String },
     Boolean { literal: bool },
-    Identifier { literal: String },
+    Identifier { name: String },
     None,
     Print,
 }
@@ -37,7 +37,7 @@ impl Token {
             Token::Number { literal } => literal.to_string(),
             Token::String { literal } => literal.clone(),
             Token::Boolean { literal } => literal.to_string(),
-            Token::Identifier { literal } => literal.clone(),
+            Token::Identifier { name } => name.clone(),
             Token::None => "none".to_string(),
             Token::Print => "print".to_string(),
         }
@@ -61,6 +61,7 @@ impl Display for Token {
             Token::Number { literal } => write!(f, "Number({})", literal),
             Token::String { literal } => write!(f, "String({})", literal),
             Token::Boolean { literal } => write!(f, "Boolean({})", literal),
+            Token::Identifier { name } => write!(f, "Identifier({})", name),
             _ => uppercase_first(&self.lexeme()).fmt(f),
         }
     }
